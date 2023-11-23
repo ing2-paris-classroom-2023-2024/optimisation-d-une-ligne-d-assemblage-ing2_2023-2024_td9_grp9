@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 int main(){
-    printf("slut");
+    printf("salut");
     return 0;
 }
 
