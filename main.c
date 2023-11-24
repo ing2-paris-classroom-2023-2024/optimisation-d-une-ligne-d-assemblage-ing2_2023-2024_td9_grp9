@@ -1,5 +1,5 @@
 // main.c
-//test
+
 #include "header.h"
 
 int main() {
