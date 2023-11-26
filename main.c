@@ -1,5 +1,4 @@
 // main.c
-//261123
 #include "header.h"
 
 int main() {
