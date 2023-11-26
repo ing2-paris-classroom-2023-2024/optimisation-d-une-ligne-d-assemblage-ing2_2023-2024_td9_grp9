@@ -1,9 +1,14 @@
 // main.c
+
 #include "header.h"
 
 int main() {
+
     FILE *file_operation = fopen("../txt/temps.txt", "r");
     Sommet sommets[MAX_TACHES];
+    Graphe g;
+    Station stations[NB_MAX_ETAPES];
+    int nbStations = 0;
     int nombreSommets = 0;
     float temps_max;
 
@@ -27,24 +32,45 @@ int main() {
     // Attribuer des stations aux tâches
     attribuerStations(sommets, nombreSommets, temps_max);
 
-    // Affichage des stations et de leurs tâches
-    for (int i = 1; i <= sommets[nombreSommets - 1].station; i++) {
-        printf("Station %d: ", i);
-        for (int j = 0; j < nombreSommets; j++) {
-            if (sommets[j].station == i) {
-                printf("%d ", sommets[j].tache);
-            }
-        }
-        printf("\n");
-    }
 
 
 
+    initGraphe(&g, NB_MAX_ETAPES);
+    lireContraintes(&g, "../txt/contrainte_precedente.txt");
+
+    printf("\n\n\n");
+    assignerStations(&g, stations, sommets, nombreSommets, &nbStations);
+
+
+
+    /* Vérification de chaque attribut de la structure sommet
     for (int i = 0; i < MAX_TACHES; i++){
-        printf("%d / %d / %f \n", sommets[i].tache, sommets[i].station, sommets[i].temps);
+        printf("%d / %d / %f / %d\n", sommets[i].tache, sommets[i].station, sommets[i].temps,sommets[i].grp_ordonencement);
+    } */
+
+
+
+    // Appeler le sous-programme pour classer les tâches par station
+    classerTachesParStation(sommets, nombreSommets, temps_max);
+
+    printf("=============================================================\n");
+    printf("Temps max par station: %f\n", temps_max);
+    // Afficher les résultats groupés par station
+    int stationActuelle = 0;
+
+    for (int i = 0; i < nombreSommets; i++) {
+        if (sommets[i].station != stationActuelle) {
+            if (stationActuelle != 0) {
+                printf("\n"); // Sauter une ligne entre les stations
+            }
+            stationActuelle = sommets[i].station;
+            printf("Station %d: ", stationActuelle);
+        }
+        printf("%d ", sommets[i].tache);
     }
-    printf("%f", temps_max);
-    fclose(file_operation);
+    printf("\n"); // Sauter une ligne à la fin de l'affichage
+    printf("=============================================================");
+
+    //fclose(file_operation);
     return 0;
 }
-

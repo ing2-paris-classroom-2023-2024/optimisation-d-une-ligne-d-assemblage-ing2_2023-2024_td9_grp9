@@ -1,9 +1,4 @@
-//
-// Created by valen on 26/11/2023.
-//
-
-
-#include <stdio.h>
+/*#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -192,3 +187,4 @@ int main() {
 
     return 0;
 }
+*/

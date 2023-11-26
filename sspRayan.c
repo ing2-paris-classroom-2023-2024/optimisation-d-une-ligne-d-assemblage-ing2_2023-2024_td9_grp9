@@ -1,8 +1,5 @@
-//
-// Created by gaadr on 26/11/2023.
-//
 #include <stdio.h>
-
+/*
 void countTasksAndTotalTime(const char* fileName, int* totalTasks, double* totalTime) {
     FILE *file = fopen(fileName, "r");
     if (file == NULL) {
@@ -80,3 +77,4 @@ int MONmain() {
 
     return 0;
 }
+ */

@@ -1,7 +1,7 @@
 // sousprog.c
 
-#include "header.h" //Valentine test
-
+#include "header.h"
+/*
 float lireTempsMax() {
     FILE *fichier = fopen("../txt/rcycle.txt", "r");
     float temps_max;
@@ -39,3 +39,4 @@ void attribuerStations(Sommet sommets[], int nombreSommets, float temps_max) {
 
     }
 }
+*/
