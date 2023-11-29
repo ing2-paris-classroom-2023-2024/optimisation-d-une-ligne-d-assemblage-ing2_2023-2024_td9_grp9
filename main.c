@@ -71,6 +71,53 @@ int main() {
     printf("\n"); // Sauter une ligne à la fin de l'affichage
     printf("=============================================================");
 
-    //fclose(file_operation);
+    fclose(file_operation);
+
+    printf("\n\n\n");
+
+
+    PaireExclusion paires[MAX_PAIRS];
+
+    int nb_ops = 35;
+
+    // Lecture des paires d'exclusion à partir du fichier
+    int nbPaires = lireExclusions("../txt/exclu.txt", paires);
+    // Vérifier si la lecture a échoué
+    if (nbPaires < 0) {
+        // Terminer le programme si une erreur s'est produite lors de la lecture du fichier
+        return 1;
+    }
+
+
+    printf("Nombre d'operations : %d\n", nb_ops);
+
+    printf("Paires d'exclusion :\n");
+    for (int i = 0; i < nbPaires; i++) {
+        // Les opérations sont réindexées à partir de 1 pour l'affichage
+        printf("%d %d\n", paires[i].op1 + 1, paires[i].op2 + 1);
+    }
+
+
+    graphe_val* grapheVal;
+    initialisation_graphe(&grapheVal, nb_ops);
+
+    // Ajout des arêtes au graphe en fonction des paires d'exclusion
+    for (int i = 0; i < nbPaires; i++) {
+        ajouter_Arete(&grapheVal, paires[i].op1, paires[i].op2);
+    }
+
+    // Coloration du graphe, ce qui assigne une "station" à chaque opération de manière à ce que
+    // les opérations en exclusion mutuelle ne soient pas dans la même station
+    colorergraphe(&grapheVal);
+
+
+
+
+
+
+
+
+
+
     return 0;
 }
