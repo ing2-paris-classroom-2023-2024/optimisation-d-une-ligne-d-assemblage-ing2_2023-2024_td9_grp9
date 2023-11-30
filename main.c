@@ -76,48 +76,38 @@ int main() {
     printf("\n\n\n");
 
 
+// Déclaration d'un pointeur pour stocker les paires d'exclusion
     PaireExclusion paires[MAX_PAIRS];
 
+    // Allocation dynamique de la structure graphe
+    graphe_val *gra = (graphe_val *)malloc(sizeof(graphe_val));
+    if (gra == NULL) {
+        fprintf(stderr, "Erreur d'allocation de mémoire\n");
+        exit(EXIT_FAILURE);
+    }
+
     int nb_ops = 35;
+    // Initialisation du graphe avec le pointeur
+    initialisation_graphe(gra, nb_ops);
 
     // Lecture des paires d'exclusion à partir du fichier
     int nbPaires = lireExclusions("../txt/exclu.txt", paires);
     // Vérifier si la lecture a échoué
     if (nbPaires < 0) {
-        // Terminer le programme si une erreur s'est produite lors de la lecture du fichier
+        // Libération de la mémoire avant de quitter en cas d'erreur
+        free(gra);
         return 1;
     }
 
 
-    printf("Nombre d'operations : %d\n", nb_ops);
-
-    printf("Paires d'exclusion :\n");
-    for (int i = 0; i < nbPaires; i++) {
-        // Les opérations sont réindexées à partir de 1 pour l'affichage
-        printf("%d %d\n", paires[i].op1 + 1, paires[i].op2 + 1);
-    }
-
-
-    graphe_val* grapheVal;
-    initialisation_graphe(&grapheVal, nb_ops);
-
     // Ajout des arêtes au graphe en fonction des paires d'exclusion
     for (int i = 0; i < nbPaires; i++) {
-        ajouter_Arete(&grapheVal, paires[i].op1, paires[i].op2);
+        ajouter_Arete(gra, paires[i].op1, paires[i].op2);
     }
 
-    // Coloration du graphe, ce qui assigne une "station" à chaque opération de manière à ce que
-    // les opérations en exclusion mutuelle ne soient pas dans la même station
-    colorergraphe(&grapheVal);
+    // Coloration du graphe
+    colorergraphe(gra);
 
-
-
-
-
-
-
-
-
-
-    return 0;
+    // Libération de la mémoire allouée pour le graphe
+    free(gra);
 }
