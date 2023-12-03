@@ -90,7 +90,7 @@ int lireExclusions(const char* nomFichier, PaireExclusion* paires) {
     // Vérifier si l'ouverture du fichier a réussi
     if (fichier == NULL) {
         // Afficher un message d'erreur si le fichier ne peut pas être ouvert
-        perror("Impossible d'ouvrir le fichier");
+        perror("Impossible d'ouvrir le fichier exclusion");
         // Retourner -1 pour indiquer une erreur
         return -1;
     }
