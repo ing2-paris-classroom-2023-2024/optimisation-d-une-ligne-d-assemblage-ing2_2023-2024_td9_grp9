@@ -90,8 +90,8 @@ int main() {
 
                         if (stationVide){
                             //printf("%d",x);
-                            for (int m = 0; m < x; ++m) {
-                                printf("Station %d : ", m+1);
+                            for (int m = 1; m < x; ++m) {
+                                printf("Station %d : ", m);
                                 bool stationVide = true;
 
                                 for (int i = 1; i < MAX_TACHES; i++) { // Chercher les tâches assignées à cette station
