@@ -73,7 +73,7 @@ int main() {
                 case 1:///1
                     color(15, 0);
                     printf("choix 1 !\n");
-                    printf("Répartition des tâches par station :\n");
+                    printf("Repartition des taches par station :\n");
                     int x=0;
 
                     for (int j = 0; j < MAX_TACHES; j++) { // Parcourir toutes les stations
@@ -135,6 +135,9 @@ int main() {
                 case 3:///3
                     color(15, 0);
                     printf("choix 3 !\n");
+                    assignerStationsET(sommets, MAX_TACHES, 15.00, exclusions, nbExclusions);
+                    attribuerStations(sommets, MAX_TACHES, 15.00);
+                    classerTachesParStation(sommets, MAX_TACHES, 15.00);
                     station = 1;
                     for (int i = 0; i < MAX_TACHES; i++) {
                         bool tacheAjoutee = false;
