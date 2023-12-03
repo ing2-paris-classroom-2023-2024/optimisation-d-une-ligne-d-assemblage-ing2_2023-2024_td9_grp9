@@ -1,113 +1,218 @@
-// main.c
-
 #include "header.h"
 
+
+
+
 int main() {
+///DECLARER LES VARIABLES
+    premierpage();
+    int choix, choixquit;
+    int station = 1;
+    while (1) {
+//int choix, choixquit;
+        float tempsMaxCycle;
 
-    FILE *file_operation = fopen("../txt/temps.txt", "r");
-    Sommet sommets[MAX_TACHES];
-    Graphe g;
-    Station stations[NB_MAX_ETAPES];
-    int nbStations = 0;
-    int nombreSommets = 0;
-    float temps_max;
+        Sommet sommets[MAX_TACHES];
+        initSommets(sommets, MAX_TACHES);
 
-    if (file_operation == NULL) {
-        perror("Erreur lors de l'ouverture du fichier temps.txt");
-        exit(1);
-    }
-
-    // Lire le temps maximum du fichier rcycle.txt
-    temps_max = lireTempsMax();
-
-    // Lecture du fichier temps.txt et stockage dans le tableau sommets
-    while (nombreSommets < MAX_TACHES && fscanf(file_operation, "%d %f", &sommets[nombreSommets].tache, &sommets[nombreSommets].temps) != EOF) {
-        sommets[nombreSommets].station = 0;
-        nombreSommets++;
-    }
-
-    // Trier les sommets
-    trierSommets(sommets, nombreSommets);
-
-    // Attribuer des stations aux tâches
-    attribuerStations(sommets, nombreSommets, temps_max);
+        lireTempsMaxCycle("../rcycle.txt", &tempsMaxCycle);
+        lireTempsTaches("../temps.txt", sommets, MAX_TACHES);
 
 
+        int exclusions[MAX_EXCLUSIONS][2]; // Assurez-vous que cela a une taille suffisante
+        int nbExclusions = lireExclusions("../exclu.txt", exclusions);
 
 
-    initGraphe(&g, NB_MAX_ETAPES);
-    lireContraintes(&g, "../txt/contrainte_precedente.txt");
-
-    printf("\n\n\n");
-    assignerStations(&g, stations, sommets, nombreSommets, &nbStations);
+        assignerStationsET(sommets, MAX_TACHES, tempsMaxCycle, exclusions, nbExclusions);
 
 
+        Graphe g;
+        Station stations[MAX_EXCLUSIONS];
+        int nbStations = 0;
+// Trier les sommets
+        trierSommets(sommets, MAX_TACHES);
+        attribuerStations(sommets, MAX_TACHES, tempsMaxCycle);
+        initGraphe(&g, MAX_TACHES);
+        lirePrecedence(&g, "../prece.txt");
 
-    /* Vérification de chaque attribut de la structure sommet
-    for (int i = 0; i < MAX_TACHES; i++){
-        printf("%d / %d / %f / %d\n", sommets[i].tache, sommets[i].station, sommets[i].temps,sommets[i].grp_ordonencement);
-    } */
+        assignerStations(&g, stations, sommets, MAX_TACHES, &nbStations);
+        classerTachesParStation(sommets, MAX_TACHES, tempsMaxCycle);
+
+
+        //nettoyer l'ecran
+        system("cls");
+        do {
+            ///----------------BOUCLE POUR AFFICHER MENU ET LA SAISIE SI INCORRECTE-------------------------
+            do {
+                color(9, 0);
+                ///AFFICHER MENU
+                printf("\n\n\t\t\t\t\t\t                                         \n"
+                       "\t\t\t\t\t                                       \n"
+                       "\t\t\t\t\t  _ __ ___     ___   _ __    _   _    \n"
+                       "\t\t\t\t\t | '_ ` _ \\   / _ \\ | '_ \\  | | | |      \n"
+                       "\t\t\t\t\t | | | | | | |  __/ | | | | | |_| |    \n"
+                       "\t\t\t\t\t |_| |_| |_|  \\___| |_| |_|  \\__,_|   \n");
+                printf("\t\t\t\t\t\t                                         \n\n");
+
+                printf("\n\t\t\t\t\t 1- Exclusion + Precedence\n\n");
+                printf("\t\t\t\t\t 2- Exclusion + Temps de cycle\n\n");
+                printf("\t\t\t\t\t 3- Precedence + Temps de cycle\n\n");
+                printf("\t\t\t\t\t 4- Optimisation max\n\n");
+                printf("\t\t\t\t\t 5- Quitter\n\n");
+
+                ///SASIR LE MENU VOULU
+                scanf("%d", &choix);
+
+
+            } while (choix != 0 && choix != 1 && choix != 2 && choix != 3 && choix != 4 && choix != 5 && choix != 6 &&
+                     choix != 7);
+            color(0, 9);
+            printf("vous avez choisi %d\n\n", choix);
+
+            switch (choix) {
+                case 1:///1
+                    color(15, 0);
+                    printf("choix 1 !\n");
+                    printf("Répartition des tâches par station :\n");
+                    int x=0;
+
+                    for (int j = 0; j < MAX_TACHES; j++) { // Parcourir toutes les stations
+
+                        //printf("Station %d : ", j);
+                        bool stationVide = true;
+
+                        for (int i = 1; i < MAX_TACHES; i++) { // Chercher les tâches assignées à cette station
+                            if (sommets[i].station == j) {
+                                //printf(" %d ", sommets[i].tache);
+                                stationVide = false;
+                            }
+                        }
+
+                        if (stationVide){
+                            //printf("%d",x);
+                            for (int m = 0; m < x; ++m) {
+                                printf("Station %d : ", m+1);
+                                bool stationVide = true;
+
+                                for (int i = 1; i < MAX_TACHES; i++) { // Chercher les tâches assignées à cette station
+                                    if (sommets[i].station == m) {
+                                        printf(" %d  ", sommets[i].tache);
+                                        bool stationVide = false;
+                                    }
+                                }
+                                printf("\n");
+                            }
+                            break;
+                        }
+
+                        x++;
+
+                        //printf("\n");
+                    }
+                    Sleep(3000);
+                    break;
+
+                case 2:///2
+                    color(15, 0);
+                    printf("Choix 2\n");
+                    printf("Temps max par station: %f\n", tempsMaxCycle);
+                    // Afficher les résultats groupés par station
+                    int stationActuelle = 0;
+                    for (int i = 1; i < MAX_TACHES; i++) {
+                        if (sommets[i].station != stationActuelle) {
+                            if (stationActuelle != 0) {
+                                printf("\n"); // Sauter une ligne entre les stations
+                            }
+                            stationActuelle = sommets[i].station;
+                            printf("Station %d : ", stationActuelle);
+                        }
+                        printf(" %d ", sommets[i].tache);
+                    }
+                    printf("\n"); // Sauter une ligne à la fin de l'affichage
+                    Sleep(3000);
+                    break;
+
+                case 3:///3
+                    color(15, 0);
+                    printf("choix 3 !\n");
+                    station = 1;
+                    for (int i = 0; i < MAX_TACHES; i++) {
+                        bool tacheAjoutee = false;
+                        if ( sommets[i].assignee != 1){
+                            for (int j = 0; j < MAX_TACHES; j++) {
+                                if ((sommets[i].exclu == sommets[j].exclu) && (sommets[i].prece == sommets[j].prece)) {
 
 
 
-    // Appeler le sous-programme pour classer les tâches par station
-    classerTachesParStation(sommets, nombreSommets, temps_max);
+                                    if (!tacheAjoutee ) {
+                                        printf("Station %d: ", station);
+                                        tacheAjoutee = true;
+                                    }
 
-    printf("=============================================================\n");
-    printf("Temps max par station: %f\n", temps_max);
-    // Afficher les résultats groupés par station
-    int stationActuelle = 0;
+                                    if (sommets[j].tache != 0 ){
+                                        printf("%d ", sommets[j].tache);
+                                    }
+                                    sommets[j].assignee = 1;
 
-    for (int i = 0; i < nombreSommets; i++) {
-        if (sommets[i].station != stationActuelle) {
-            if (stationActuelle != 0) {
-                printf("\n"); // Sauter une ligne entre les stations
+                                }
+                            }
+
+                            if (tacheAjoutee) {
+                                printf("\n");
+                                station++;
+                            }
+                        }
+
+                    }
+                    Sleep(3000);
+                    break;
+
+                case 4:///4
+                    color(15, 0);
+                    printf("choix 4 !\n");
+                    station = 1;
+                    for (int i = 0; i < MAX_TACHES; i++) {
+                        bool tacheAjoutee = false;
+                        if ( sommets[i].assignee != 1){
+                            for (int j = 0; j < MAX_TACHES; j++) {
+                                // Utilisez '==' pour comparer
+                                if ((sommets[i].exclu == sommets[j].exclu) && (sommets[i].prece == sommets[j].prece)) {
+
+
+
+                                    if (!tacheAjoutee ) {
+                                        printf("Station %d: ", station);
+                                        tacheAjoutee = true;
+                                    }
+                                    if (sommets[j].tache != 0 ){
+                                        printf("%d ", sommets[j].tache);
+                                    }
+                                    sommets[j].assignee = 1;
+
+                                }
+                            }
+
+                            if (tacheAjoutee) {
+                                printf("\n");
+                                station++;
+                            }
+                        }
+
+                    }
+                    Sleep(3000);
+                    break;
+
+                case 5: ///quitter
+                    break;
+
+                default:
+                    printf("ERREUR DE SAISIE\n");
+                    system("CLS");
+
+                    break;
             }
-            stationActuelle = sommets[i].station;
-            printf("Station %d: ", stationActuelle);
-        }
-        printf("%d ", sommets[i].tache);
+        } while (choixquit == 2);
+        system("PAUSE");
     }
-    printf("\n"); // Sauter une ligne à la fin de l'affichage
-    printf("=============================================================");
-
-    fclose(file_operation);
-
-    printf("\n\n\n");
-
-
-// Déclaration d'un pointeur pour stocker les paires d'exclusion
-    PaireExclusion paires[MAX_PAIRS];
-
-    // Allocation dynamique de la structure graphe
-    graphe_val *gra = (graphe_val *)malloc(sizeof(graphe_val));
-    if (gra == NULL) {
-        fprintf(stderr, "Erreur d'allocation de mémoire\n");
-        exit(EXIT_FAILURE);
-    }
-
-    int nb_ops = 35;
-    // Initialisation du graphe avec le pointeur
-    initialisation_graphe(gra, nb_ops);
-
-    // Lecture des paires d'exclusion à partir du fichier
-    int nbPaires = lireExclusions("../txt/exclu.txt", paires);
-    // Vérifier si la lecture a échoué
-    if (nbPaires < 0) {
-        // Libération de la mémoire avant de quitter en cas d'erreur
-        free(gra);
-        return 1;
-    }
-
-
-    // Ajout des arêtes au graphe en fonction des paires d'exclusion
-    for (int i = 0; i < nbPaires; i++) {
-        ajouter_Arete(gra, paires[i].op1, paires[i].op2);
-    }
-
-    // Coloration du graphe
-    colorergraphe(gra);
-
-    // Libération de la mémoire allouée pour le graphe
-    free(gra);
 }
+

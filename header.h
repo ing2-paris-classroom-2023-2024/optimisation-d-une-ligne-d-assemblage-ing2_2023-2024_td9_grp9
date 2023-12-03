@@ -3,71 +3,85 @@
 #ifndef TEMPS_PRECEDENCE_PROJ_HEADER_H
 #define TEMPS_PRECEDENCE_PROJ_HEADER_H
 
+
+
+///1. BIBLIOTHEQUES
+//INCLUDE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <conio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include <windows.h>
 
-#define MAX_TACHES 31
-#define NB_MAX_ETAPES 35
+//DEFINE
+#define MAX_TACHES 36  // Augmenté pour inclure l'indice 0 qui ne sera pas utilisé
+#define MAX_EXCLUSIONS 100
 
-#define MAX_PAIRS 100
-
-
+///2. STRUCTURES
 typedef struct {
-    int op1;
-    int op2;
-} PaireExclusion;
+    int tache;
+    float temps;
+    int grp_ordonnancement;
+    int exclu;
+    int prece;
+    int station;
+    int assignee; // Pour marquer si la tâche a déjà été assignée à une station
 
-typedef struct {
-    bool adjacence[NB_MAX_ETAPES][NB_MAX_ETAPES]; // Matrice d'adjacence avec le max d'opérations
-    int nombre_ops; // Nombre d'opérations
-} graphe_val;
-
-// Structure pour représenter un graphe
+} Sommet;
+//Exclu
+//typedef struct Sommet
+//TempsCycle
+//typedef struct Sommet
+//Precedence
+//typedef struct Sommet
 typedef struct {
     int nbSommets;
-    bool matriceAdj[NB_MAX_ETAPES][NB_MAX_ETAPES];
-    int degreEntrant[NB_MAX_ETAPES];
+    bool matriceAdj[MAX_EXCLUSIONS][MAX_EXCLUSIONS];
+    int degreEntrant[MAX_EXCLUSIONS];
 } Graphe;
 
 // Structure pour représenter les stations
 typedef struct {
-    int etapes[NB_MAX_ETAPES];
+    int etapes[MAX_EXCLUSIONS];
     int nbEtapes;
 } Station;
+///3. SOUS PROG
 
-// Structure pour stocker les informations sur chaque sommet
-typedef struct {
-    int tache;
-    float temps;
-    int grp_ordonencement;
-    int station;
-} Sommet;
+void initSommets(Sommet sommets[], int nbSommets);
 
-// Déclarations des fonctions
+int lireExclusions(const char* nomFichier, int (*exclusions)[2]);
 
-float lireTempsMax();
+void lireTempsMaxCycle(const char* nomFichier, float *tempsMax);
+void lireTempsTaches(const char* nomFichier, Sommet sommets[], int taille);
 
-int comparerGrpOrdonencement(const void *a, const void *b);
 
+bool estExclue(int tache, int station, Sommet sommets[], int exclusions[][2], int nbExclusions);
+void assignerStationsET(Sommet sommets[], int nbSommets, float tempsMaxCycle, int exclusions[][2], int nbExclusions);
+
+void initGraphe(Graphe *g, int nbSommets);
+void ajouterArete(Graphe *g, int debut, int fin);
+
+void lirePrecedence(Graphe *g, const char* nomFichier);
+void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombreSommets, int *nbStations);
 
 
 void trierSommets(Sommet sommets[], int nombreSommets);
 void attribuerStations(Sommet sommets[], int nombreSommets, float temps_max);
-void initGraphe(Graphe *g, int nbSommets);
-void ajouterArete(Graphe *g, int debut, int fin);
-void lireContraintes(Graphe *g, const char* nomFichier);
-void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombreSommets, int *nbStations);
+int comparerGrpOrdonencement(const void *a, const void *b);
 void classerTachesParStation(Sommet sommets[], int nombreSommets, float temps_max);
 
 
 
-bool CouleurValide(graphe_val *grapheVal, int couleurs[], int noeud, int couleur);
-void initialisation_graphe(graphe_val *g, int n);
-void ajouter_Arete(graphe_val *g, int noeud1, int noeud2);
-int premiereCouleurDisponible(graphe_val *g, int couleurs[], int noeud);
-void colorergraphe(graphe_val *grapheVal);
-int lireExclusions(const char* nomFichier, PaireExclusion* paires);
+
+//INTERFACE:
+//interface
+void premierpage();
+void color(int couleurDuTexte,int couleurDeFond);
+void voiture();
+
 
 
 

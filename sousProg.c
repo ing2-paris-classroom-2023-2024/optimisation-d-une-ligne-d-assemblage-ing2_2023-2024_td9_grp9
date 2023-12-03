@@ -1,5 +1,109 @@
 #include "header.h"
 
+//Initit
+void initSommets(Sommet sommets[], int nbSommets) {
+    for (int i = 1; i < nbSommets; i++) {
+        sommets[i].tache = i;
+        sommets[i].temps = 0.0;
+        sommets[i].grp_ordonnancement = -1;
+        sommets[i].exclu = -1;
+        sommets[i].station = -1;
+        sommets[i].assignee = -1;
+
+    }
+}
+
+
+void lireTempsMaxCycle(const char* nomFichier, float *tempsMax) {
+    FILE *fichier = fopen(nomFichier, "r");
+    if (fichier == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        exit(1);
+    }
+
+    if (fscanf(fichier, "%f", tempsMax) != 1) {
+        fprintf(stderr, "Erreur de format dans le fichier %s\n", nomFichier);
+        exit(1);
+    }
+
+    fclose(fichier);
+}
+void lireTempsTaches(const char* nomFichier, Sommet sommets[], int taille) {
+    FILE *fichier = fopen(nomFichier, "r");
+    int tache;
+    float temps;
+
+    if (fichier == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        exit(1);
+    }
+
+    // Initialiser tous les sommets avec un temps de 0
+    for (int i = 1; i < taille; i++) {
+        sommets[i].tache = i;
+        sommets[i].temps = 0.0;
+    }
+
+    while (fscanf(fichier, "%d %f", &tache, &temps) == 2) {
+        if (tache >= 1 && tache < taille) {
+            sommets[tache].temps = temps;
+        }
+    }
+
+    fclose(fichier);
+}
+
+
+//EXCLUSION
+int lireExclusions(const char* nomFichier, int (*exclusions)[2]) {
+    FILE *fichier = fopen(nomFichier, "r");
+    if (fichier == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return 0;
+    }
+
+    int nbPaires = 0;
+    while (fscanf(fichier, "%d %d", &exclusions[nbPaires][0], &exclusions[nbPaires][1]) == 2) {
+        nbPaires++;
+    }
+
+    fclose(fichier);
+    return nbPaires;
+}
+
+
+bool estExclue(int tache, int station, Sommet sommets[], int exclusions[][2], int nbExclusions) {
+    for (int i = 0; i < nbExclusions; i++) {
+        if ((exclusions[i][0] == tache || exclusions[i][1] == tache) &&
+            (sommets[exclusions[i][0]].station == station || sommets[exclusions[i][1]].station == station)) {
+            return true; // L'exclusion est violée
+        }
+    }
+    return false; // Aucune exclusion pour cette tâche et cette station
+}
+void assignerStationsET(Sommet sommets[], int nbSommets, float tempsMaxCycle, int exclusions[][2], int nbExclusions) {
+    for (int j = 0; j < nbSommets; j++) { // Parcourir les stations
+        float tempsCumule = 0.0;
+
+        for (int i = 1; i < nbSommets; i++) { // Essayer d'assigner chaque tâche à la station j
+            if (sommets[i].temps == 0.0 || sommets[i].station != -1) continue; // Ignorer si la tâche n'a pas de temps ou est déjà assignée
+
+            // Vérifier les contraintes
+            if (!estExclue(i, j, sommets, exclusions, nbExclusions) && tempsCumule + sommets[i].temps <= tempsMaxCycle) {
+                sommets[i].station = j; // Assigner la tâche i à la station j
+                sommets[i].exclu = j;
+                tempsCumule += sommets[i].temps;
+                //printf("temps: %f", tempsCumule);
+            }
+        }
+    }
+}
+
+
+
+// Initialisation du graphe
+#include "header.h"
+
 
 // Vérifie si une tâche existe dans le tableau des sommets
 bool tacheExiste(int tache, Sommet sommets[], int nombreSommets) {
@@ -10,9 +114,6 @@ bool tacheExiste(int tache, Sommet sommets[], int nombreSommets) {
     }
     return false;
 }
-
-
-// Initialisation du graphe
 void initGraphe(Graphe *g, int nbSommets) {
     g->nbSommets = nbSommets;
     for (int i = 0; i < nbSommets; i++) {
@@ -23,14 +124,12 @@ void initGraphe(Graphe *g, int nbSommets) {
     }
 }
 
-// Ajout d'une arête
 void ajouterArete(Graphe *g, int debut, int fin) {
     g->matriceAdj[debut - 1][fin - 1] = true;
     g->degreEntrant[fin - 1]++;
 }
 
-// Lecture des contraintes à partir d'un fichier
-void lireContraintes(Graphe *g, const char* nomFichier) {
+void lirePrecedence(Graphe *g, const char* nomFichier) {
     FILE *fichier = fopen(nomFichier, "r");
     if (fichier == NULL) {
         perror("Erreur lors de l'ouverture du fichier");
@@ -44,10 +143,8 @@ void lireContraintes(Graphe *g, const char* nomFichier) {
 
     fclose(fichier);
 }
-
-// Assignation des tâches aux stations avec vérification de l'existence des tâches
 void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombreSommets, int *nbStations) {
-    int fileAttente[NB_MAX_ETAPES], tete = 0, queue = 0;
+    int fileAttente[MAX_TACHES], tete = 0, queue = 0;
 
     // Enfiler les tâches sans prérequis
     for (int i = 0; i < g->nbSommets; i++) {
@@ -59,7 +156,7 @@ void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombre
     *nbStations = 0;
     while (tete < queue) {
         int nbTachesStationActuelle = 0;
-        int prochaineFile[NB_MAX_ETAPES], prochaineQueue = 0;
+        int prochaineFile[MAX_TACHES], prochaineQueue = 0;
 
         while (tete < queue) {
             int tache = fileAttente[tete++];
@@ -71,7 +168,7 @@ void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombre
                 // Mettre à jour grp_ordonencement pour chaque sommet correspondant
                 for (int k = 0; k < nombreSommets; k++) {
                     if (sommets[k].tache == tache + 1) {
-                        sommets[k].grp_ordonencement = *nbStations + 1;
+                        sommets[k].grp_ordonnancement = *nbStations + 1;
                         break;
                     }
                 }
@@ -103,32 +200,9 @@ void assignerStations(Graphe *g, Station *stations, Sommet sommets[], int nombre
 }
 
 
-
-// Lit et retourne le temps maximum par station depuis un fichier
-float lireTempsMax() {
-    FILE *fichier = fopen("../txt/rcycle.txt", "r");
-    if (fichier == NULL) {
-        perror("Erreur lors de l'ouverture du fichier rcycle.txt");
-        exit(1);
-    }
-
-    float temps_max;
-    if (fscanf(fichier, "%f", &temps_max) != 1) {
-        perror("Erreur lors de la lecture du fichier rcycle.txt");
-        fclose(fichier);
-        exit(1);
-    }
-
-    fclose(fichier);
-    return temps_max;
-}
-
-// Trie les sommets selon un critère spécifique (à implémenter)
 void trierSommets(Sommet sommets[], int nombreSommets) {
     // nous allons utiliser un tri pour classer les sommets par ordres croissant
 }
-
-// Attribue des stations aux tâches en fonction du temps maximum par station
 void attribuerStations(Sommet sommets[], int nombreSommets, float temps_max) {
     float tempsCumule = 0.0;
     int stationActuelle = 1;
@@ -142,15 +216,11 @@ void attribuerStations(Sommet sommets[], int nombreSommets, float temps_max) {
         tempsCumule += sommets[i].temps;
     }
 }
-
-// Fonction de comparaison pour le tri basé sur grp_ordonencement
 int comparerGrpOrdonencement(const void *a, const void *b) {
     Sommet *sommetA = (Sommet *)a;
     Sommet *sommetB = (Sommet *)b;
-    return sommetA->grp_ordonencement - sommetB->grp_ordonencement;
+    return sommetA->grp_ordonnancement - sommetB->grp_ordonnancement;
 }
-
-// Classe les tâches par station en regroupant les ordres d'ordonnancement
 void classerTachesParStation(Sommet sommets[], int nombreSommets, float temps_max) {
     qsort(sommets, nombreSommets, sizeof(Sommet), comparerGrpOrdonencement);
 
@@ -160,13 +230,16 @@ void classerTachesParStation(Sommet sommets[], int nombreSommets, float temps_ma
 
     for (int i = 0; i < nombreSommets; i++) {
         if (tempsCumule + sommets[i].temps > temps_max ||
-            (grpOrdonnancementActuel != sommets[i].grp_ordonencement && grpOrdonnancementActuel != 0)) {
+            (grpOrdonnancementActuel != sommets[i].grp_ordonnancement && grpOrdonnancementActuel != 0)) {
             stationActuelle++;
             tempsCumule = 0.0;
         }
 
         sommets[i].station = stationActuelle;
+        sommets[i].prece = stationActuelle + 100;
         tempsCumule += sommets[i].temps;
-        grpOrdonnancementActuel = sommets[i].grp_ordonencement;
+        grpOrdonnancementActuel = sommets[i].grp_ordonnancement;
     }
 }
+
+
