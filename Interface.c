@@ -13,7 +13,7 @@ void premierpage(){
     color(9, 0);
     printf("\t\t\t\t\t\t\t\t\t\t\tKERDOUCI Fethi %c\n", 0X01);
     color(9, 0);
-    printf("\t\t\t\t\t\t\t\t\t\t\tMELONNE Valentine %c\n", 0X01);
+    printf("\t\t\t\t\t\t\t\t\t\t\tMELLONE Valentine %c\n", 0X01);
     voiture();
 
 ///temporiser le jeu
